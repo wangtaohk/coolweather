@@ -1,10 +1,14 @@
 package com.coolweather.coolweather.db;
 
+import com.google.gson.annotations.SerializedName;
+
 import org.litepal.crud.DataSupport;
 
 public class City extends DataSupport {
     private int id;
+//    @SerializedName("name")
     private String cityName;
+//    @SerializedName("id")
     private int cityCode;
     private int provinceId;
 

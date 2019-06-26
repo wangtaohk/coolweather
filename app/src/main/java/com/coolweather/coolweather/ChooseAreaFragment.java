@@ -2,6 +2,7 @@ package com.coolweather.coolweather;
 
 import android.annotation.TargetApi;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -22,6 +23,7 @@ import com.coolweather.coolweather.db.City;
 import com.coolweather.coolweather.db.County;
 import com.coolweather.coolweather.db.Province;
 import com.coolweather.coolweather.util.HttpUtil;
+import com.coolweather.coolweather.util.Utility_GSON;
 import com.coolweather.coolweather.util.Utility_JSONObject;
 
 import org.litepal.crud.DataSupport;
@@ -91,10 +93,26 @@ public class ChooseAreaFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(currentLevel==LEVEL_PROVINCE){
                     selectedProvince=provinceList.get(position);
+//                    Log.d("aaa",selectedProvince.getId()+"asd"+position);
                     queryCities();
                 }else if(currentLevel==LEVEL_CITY){
                     selectCity=cityList.get(position);
                     queryCounties();
+                }else if(currentLevel==LEVEL_COUNTY){
+                    String weatherId=countList.get(position).getWeatherId();
+
+                    if(getActivity() instanceof MainActivity) {
+                        Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                        intent.putExtra("weather_id", weatherId);
+                        startActivity(intent);
+                        getActivity().finish();
+                    }else if(getActivity() instanceof WeatherActivity){
+                        WeatherActivity activity=(WeatherActivity)getActivity();
+                        activity.drawerLayout.closeDrawers();
+                        activity.swipeRefresh.setRefreshing(true);
+                        activity.requestWeather(weatherId);
+                        activity.drawerLayout.closeDrawers();
+                    }
                 }
             }
         });
@@ -117,7 +135,8 @@ public class ChooseAreaFragment extends Fragment {
         titleText.setText("中国");
         backButton.setVisibility(View.GONE);
         provinceList= DataSupport.findAll(Province.class);
-        Log.d(TAG,provinceList.size()+"");
+//        Log.d(TAG,provinceList.size()+"");
+
         if(provinceList.size()>0){
             dataList.clear();
             for(Province province:provinceList){
@@ -138,6 +157,7 @@ public class ChooseAreaFragment extends Fragment {
         titleText.setText(selectedProvince.getProvinceName());
         backButton.setVisibility(View.VISIBLE);
         cityList=DataSupport.where("provinceid=?",String.valueOf(selectedProvince.getId())).find(City.class);
+//        Log.d("aaa",selectedProvince.getId()+"");
         if(cityList.size()>0){
             dataList.clear();
             for(City city:cityList){
@@ -149,6 +169,7 @@ public class ChooseAreaFragment extends Fragment {
         }else{
             int provinceCode=selectedProvince.getProvinceCode();
             String address="http://guolin.tech/api/china/"+provinceCode;
+//            Log.d("aaa",address);
             queryFromServer(address,"city");
         }
     }
